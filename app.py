@@ -9,9 +9,9 @@ st.title("Sales Intelligence Dashboard")
 st.write("AI Powered Analytics Dashboard")
 
 #sales_target = "select * from sales_target"
-target_data = pd.read_csv(r"C:\Users\Venkynagalla\Documents\data analyst\E-Commerse Sales Data\Sales target.csv")
-orders = pd.read_csv(r"C:\Users\Venkynagalla\Documents\data analyst\E-Commerse Sales Data\List_of_Orders.csv")
-orderdetails = pd.read_csv(r"C:\Users\Venkynagalla\Documents\data analyst\E-Commerse Sales Data\Order Details.csv")
+target_data = pd.read_csv("Sales target.csv")
+orders = pd.read_csv("List_of_Orders.csv")
+orderdetails = pd.read_csv("Order Details.csv")
 #data = data.loc[:, ~data.columns.duplicated()]
 data = pd.merge(orders,orderdetails,on='Order ID')
 #data = data.loc[:, ~data.columns.duplicated()]
