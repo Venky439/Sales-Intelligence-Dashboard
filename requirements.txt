@@ -3,4 +3,4 @@ pandas
 mysql-connector-python
 matplotlib
 scikit-learn
-scipy.stats
+scipy
