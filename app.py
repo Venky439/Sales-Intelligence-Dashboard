@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import mysql.connector
 from scipy.stats import zscore
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
@@ -9,37 +8,12 @@ import matplotlib.pyplot as plt
 st.title("Sales Intelligence Dashboard")
 st.write("AI Powered Analytics Dashboard")
 
-# Database Connection
-connection = mysql.connector.connect(
-host='localhost',
-user='root',
-password='Venky439',
-database='sales_intelligence'
-)
-
-query = """
-select 
-o.`Order ID`,
-o.`Order Date`,
-o.CustomerName,
-o.State,
-o.City,
-
-od.Category,
-od.`Sub-Category`,
-od.Amount,
-od.Profit,
-od.Quantity
-from orders o
-join orderdetails od
-on o.`Order ID` = od.`Order ID`
-join sales_target st
-on od.Category = st.Category
-"""
-
-sales_target = "select * from sales_target"
-target_data = pd.read_sql(sales_target,connection)
-data = pd.read_sql(query,connection)
+#sales_target = "select * from sales_target"
+target_data = pd.read_csv(r"C:\Users\Venkynagalla\Documents\data analyst\E-Commerse Sales Data\Sales target.csv")
+orders = pd.read_csv(r"C:\Users\Venkynagalla\Documents\data analyst\E-Commerse Sales Data\List_of_Orders.csv")
+orderdetails = pd.read_csv(r"C:\Users\Venkynagalla\Documents\data analyst\E-Commerse Sales Data\Order Details.csv")
+#data = data.loc[:, ~data.columns.duplicated()]
+data = pd.merge(orders,orderdetails,on='Order ID')
 #data = data.loc[:, ~data.columns.duplicated()]
 filtered_data = data.copy()
 
@@ -72,7 +46,7 @@ if selected_city != 'All':
     
 
 # Date filter
-filtered_data['Order Date'] = pd.to_datetime(filtered_data['Order Date'])
+filtered_data['Order Date'] = pd.to_datetime(filtered_data['Order Date'],dayfirst=True)
 st.sidebar.subheader("Date Filter")
 start_date = st.sidebar.date_input(
 "Start Date",
