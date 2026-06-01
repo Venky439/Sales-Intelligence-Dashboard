@@ -41,3 +41,13 @@ https://sales-intelligence-dashboard-gtmjhpzezk9vz7xqftv3yi.streamlit.app/
 - Machine Learning
 - Dashboard Development
 - Deployment
+
+- ## Key Business Insights
+### Findings
+- Electronics category generated the highest sales revenue.
+- Some states showed high sales but low profit margins.
+- A few products contributed significantly to overall profits.
+- Monthly sales trends revealed seasonal fluctuations.
+- Several orders were profitable while some resulted in losses.
+- Sales forecasting helped estimate future sales performance.
+- Target vs Actual analysis identified categories missing targets.
