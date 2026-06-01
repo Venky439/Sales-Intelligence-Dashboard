@@ -29,3 +29,15 @@ An end-to-end Sales Intelligence Dashboard built using SQL, Python, Pandas, Mach
 
 ## Live Dashboard
 https://sales-intelligence-dashboard-gtmjhpzezk9vz7xqftv3yi.streamlit.app/
+
+## Skills Demonstrated
+- SQL Joins
+- Aggregations
+- Views
+- Stored Procedures
+- CASE Statements
+- Data Cleaning
+- Data Analysis
+- Machine Learning
+- Dashboard Development
+- Deployment
