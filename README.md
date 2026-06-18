@@ -99,7 +99,10 @@ README.md
 
 ---
 
-## Dashboard Preview
+## Dashboard link & Preview
+
+https://sales-intelligence-dashboard-gtmjhpzezk9vz7xqftv3yi.streamlit.app/
+To see the output must download the datasets
 
 Interactive Streamlit dashboard with:
 
