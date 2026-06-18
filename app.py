@@ -3,18 +3,70 @@ import pandas as pd
 from scipy.stats import zscore
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
+import google.generativeai as genai
+
+# Integrating the google gemini
+genai.configure(
+    api_key=st.secrets["GEMINI_API_KEY"])
+
+gemini_model = genai.GenerativeModel(
+    "gemini-2.5-flash"
+)
+
 
 # Title
 st.title("Sales Intelligence Dashboard")
 st.write("AI Powered Analytics Dashboard")
 
+
+
 #sales_target = "select * from sales_target"
-target_data = pd.read_csv("Sales target.csv")
-orders = pd.read_csv("List_of_Orders.csv")
-orderdetails = pd.read_csv("Order Details.csv")
+#target_data = pd.read_csv("Sales target.csv")
+#orders = pd.read_csv("List_of_Orders.csv")
+#orderdetails = pd.read_csv("Order Details.csv")
+# User Can Upload the file
+st.sidebar.subheader("Upload Files")
+orders_file = st.sidebar.file_uploader(
+    "Upload Orders File",
+    type=["csv"]
+)
+
+orderdetails_file = st.sidebar.file_uploader(
+    "Upload Order Details File",
+    type=["csv"]
+)
+
+target_file = st.sidebar.file_uploader(
+    "Upload Target File",
+    type=["csv"]
+)
+
+if (
+    orders_file is not None
+    and
+    orderdetails_file is not None
+    and
+    target_file is not None
+):
+
+    orders = pd.read_csv(
+        orders_file
+    )
+
+    orderdetails = pd.read_csv(
+        orderdetails_file
+    )
+
+    target_data = pd.read_csv(
+        target_file
+    )
+
+else:
+    st.stop()
+
+
 #data = data.loc[:, ~data.columns.duplicated()]
 data = pd.merge(orders,orderdetails,on='Order ID')
-#data = data.loc[:, ~data.columns.duplicated()]
 filtered_data = data.copy()
 
 # Multi Filter Category
@@ -133,7 +185,31 @@ with tab1:
         "Profit Margin %",
         round(profit_margin,2)
     )
+    st.subheader("AI Executive Summary")
 
+if st.button("Generate Executive Summary"):
+
+    prompt = f"""
+    You are a Senior Business Analyst.
+
+    Total Sales = {total_sales}
+    Total Profit = {total_profit}
+    Total Orders = {total_orders}
+    Profit Margin = {profit_margin}
+
+    Top Sales Category = {high_sales}
+    Lowest Sales Category = {low_sales}
+
+    Create a management summary.
+    Include:
+    1. Key Findings
+    2. Risks
+    3. Recommendations
+    """
+
+    response = gemini_model.generate_content(prompt)
+
+    st.success(response.text)
 
 # Chart
 sub_category_sales = filtered_data.groupby(
@@ -175,7 +251,11 @@ low_profit = filtered_data.groupby('Category')['Profit'].sum().idxmin()
 low_sales = filtered_data.groupby('Category')['Amount'].sum().idxmin()
 high_sales = filtered_data.groupby('Category')['Amount'].sum().idxmax()
 high_profit = filtered_data.groupby('Category')['Profit'].sum().idxmax()
-
+state_wise = filtered_data.groupby('State')['Amount'].sum().idxmax()
+state_profit= filtered_data.groupby('State')['Profit'].sum().idxmax()
+city_wise = filtered_data.groupby('City')['Amount'].sum().idxmax()
+city_profit = filtered_data.groupby('City')['Profit'].sum().idxmax()
+top_products = filtered_data.groupby('Sub-Category')['Amount'].sum().head(5)
 # AI Business OInsights
 st.subheader("AI business Insights")
 
@@ -201,7 +281,7 @@ Anomalies[[
 
 # Top 5 Customers
 top_customers = filtered_data.groupby('CustomerName')['Amount'].sum().sort_values(ascending=False).head(5)   
-st.subheader("Top 5 Customers")
+#st.subheader("Top 5 Customers")
 #st.bar_chart(top_customers)
 
 # Forecast Prediction
@@ -267,45 +347,66 @@ if len(missed_targets) > 0:
 else:
     st.success("All targets achieved")    
 
-def generate_recommendation(row):
-    if row['Achievement %'] < 80:
-        return "High Risk - Immediate Attention Needed"
-    elif row['Achievement %'] < 100:
-        return "Needs Improvement"
-    else:
-        return "Performing Well"
+if st.button("Generate AI Recommendations"):
 
-# Recommendation Analysis
-target_vs_actual['Recommendation'] = target_vs_actual.apply(
-generate_recommendation,
-axis=1    
-)
+    prompt = f"""
+    Category Performance:
 
-st.subheader("AI Recommendations")
-st.dataframe(
-target_vs_actual[
-['Category',
-'Achievement %',
-'Recommendation']    
-]    
-)  
+    {target_vs_actual[['Category','Achievement %']].to_string()}
+
+    Give recommendations for each category.
+
+    Mention:
+    - High Risk Categories
+    - Improvement Areas
+    - Growth Opportunities
+    """
+
+    response = gemini_model.generate_content(prompt)
+
+    st.write(response.text)
+
 
 # User Can ask the question
 with tab4:
+
     st.subheader("AI Analytics Assistant")
-    question = st.text_input("Ask a business question")
+    question = st.text_input(
+        "Ask a business question"
+    )
 
+    if question:
 
-    if "highest sales" in question.lower():
-       st.success(f"{high_sales} has highest sales")
-    elif "highest profit" in question.lower():
-       st.success(f"{high_profit} has highest profit")
-    elif "lowest sales" in question.lower():
-       st.warning(f"{low_sales} has lowest Sales")
-    elif "lowest profit" in question.lower():
-       st.warning(f"{low_profit} has lowest profit")   
-    else:
-       st.error("Question not understand")     
+        prompt = f"""
+        You are a Senior Business Analyst.
+
+        Sales Summary:
+        Total Sales = {round(total_sales,2)}
+        Total Profit = {round(total_profit,2)}
+        Total Orders = {total_orders}
+        Profit Margin = {round(profit_margin,2)}
+        Top Sales Category = {high_sales}
+        Top Profit Category = {high_profit}
+        Lowest Sales Category = {low_sales}
+        Lowest Profit Category = {low_profit}
+        Top State Sales = {state_wise}
+        Top State Profit = {state_profit}
+        Top City Sales = {city_wise}
+        Top City Profit = {city_profit}
+
+        User Question:
+        {question}
+
+        Give a clear business answer.
+        """
+
+        response = gemini_model.generate_content(
+            prompt
+        )
+        
+        st.success(
+            response.text
+        )
 
 
 # Loss making orders
@@ -341,6 +442,56 @@ with tab2:
     st.pyplot(fig4)
     st.pyplot(fig5)
     st.bar_chart(top_customers)
+
+# AI insights
+if st.button("Generate AI Insights"):
+
+    prompt = f"""
+    Analyze this sales data.
+
+    Total Sales: {total_sales}
+    Total Profit: {total_profit}
+    Profit Margin: {profit_margin}
+    Top Category: {high_sales}
+    Lowest Category: {low_sales}
+
+    Give:
+    1. Key Findings
+    2. Risks
+    3. Recommendations
+    """
+
+    response = gemini_model.generate_content(prompt)
+    st.subheader("AI Executive Summary")
+    st.write(response.text)
+
+
+st.subheader("Management Report")
+if st.button("Generate Management Report"):
+
+    prompt = f"""
+    Create a professional management report.
+
+    Total Sales = {total_sales}
+    Total Profit = {total_profit}
+    Profit Margin = {profit_margin}
+    Top Category = {high_sales}
+    Lowest Category = {low_sales}
+
+    Include:
+    Executive Summary
+    Sales Performance
+    Risk Areas
+    Recommendations
+    """
+
+    response = gemini_model.generate_content(prompt)
+    st.text_area(
+        "Management Report",
+        response.text,
+        height=400
+    )
+
 
 
 csv = filtered_data.to_csv(index=False)
