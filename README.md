@@ -112,17 +112,6 @@ Interactive Streamlit dashboard with:
 
 ---
 
-## Future Enhancements
-
-* Power BI Integration
-* Automated Data Refresh
-* Real-Time Database Connection
-* Advanced Forecasting Models
-* Email Report Automation
-* Multi-user Dashboard Access
-
----
-
 ## Author
 
 Nagalla Venkata Krishna
